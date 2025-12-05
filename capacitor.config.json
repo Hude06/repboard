@@ -1,0 +1,10 @@
+{
+  "appId": "com.judemakes.dev",
+  "appName": "repboard",
+  "webDir": "src",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}

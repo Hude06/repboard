@@ -1,0 +1,142 @@
+/* --------------------------
+   BASE
+--------------------------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background: #F5F5F5;
+  color: #1F1F1F;
+}
+
+/* Page container */
+.page {
+  text-align: center;
+  padding-bottom: 90px; /* prevents overlap with navbar */
+}
+
+/* --------------------------
+   NAVBAR
+--------------------------- */
+.navbar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  z-index: 50;
+}
+
+.navbar button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #eaeaea;
+  font-size: 16px;
+  transition: background 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background: #ddd;
+}
+
+.navbar button:active {
+  transform: scale(0.95);
+}
+
+/* --------------------------
+   REP ROW (increments + button)
+--------------------------- */
+.repRow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 24px; /* spacing between increment buttons and main button */
+}
+
+/* --------------------------
+   BIG REP BUTTON
+--------------------------- */
+#repButton {
+  width: 200px;
+  height: 200px;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  border: none;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transition: transform 0.15s, background 0.2s;
+  cursor: pointer;
+}
+
+#repButton:active {
+  transform: scale(0.92);
+  background: #cc0000;
+}
+
+#repCount {
+  font-size: 50px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* --------------------------
+   INCREMENT BUTTONS (-5 / +5)
+--------------------------- */
+.incerment {
+  font-size: 24px;
+  font-weight: 700;
+  background-color: red;
+  color: white;
+
+  width: 60px;
+  height: 60px;
+
+  border-radius: 14px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  user-select: none;
+  cursor: pointer;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  transition: transform 0.1s ease;
+}
+
+.incerment:active {
+  transform: scale(0.92);
+}
+
+/* --------------------------
+   FLOAT-UP ANIMATION (optional for +1 effects)
+--------------------------- */
+@keyframes floatUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+}
