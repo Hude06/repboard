@@ -236,7 +236,7 @@ async function increaseRepCount(reps, type) {
     console.log('alltimerep object:', alltimerep);
     console.log('currentValue[type]:', currentValue[type]);
     console.log('alltimerep[type]:', alltimerep[type]);
-
+    type = type.toLowerCase();  
     // Safe increment to prevent NaN
     alltimerep[type] = (alltimerep[type] || 0) + reps;
     currentValue[type] = (currentValue[type] || 0) + reps;
@@ -259,7 +259,7 @@ async function increaseRepCount(reps, type) {
 
 
 repTypeSelect.addEventListener('change', () => {
-  repType = repTypeSelect.value;
+  repType = repTypeSelect.value.toLowerCase();
   console.log(`Selected rep type: ${repType}`);
   repCount.textContent = currentValue[repType];
 });
