@@ -96,6 +96,7 @@ async function handleCredentialResponse(response) {
         updateUIForLoggedInUser(username);
         userId = data.userId;
         loadAllTimeRepsFromServerOrLocal(); // reload totals from server after login
+        currentValue = { push: 0, pull: 0 };
         repCount.textContent = currentValue[repType];
     } catch (error) {
         console.error("Error verifying token:", error);
@@ -106,6 +107,7 @@ async function handleCredentialResponse(response) {
         if (storedUserId && storedUsername) {
             userId = storedUserId;
             updateUIForLoggedInUser(storedUsername);
+            currentValue = { push: 0, pull: 0 }; // reset current session counts
             repCount.textContent = currentValue[repType]; // reset display
         } else {
             userId = null;
@@ -302,6 +304,7 @@ function showPage(pageId) {
   if (pageId === 'repPage') {
     buttons.repPageButton.classList.add('active');
   } else if (pageId === 'profilePage') {
+    loadAllTimeRepsFromServerOrLocal();
     buttons.profileButton.classList.add('active');
     stats.allTimePullUps.innerText = alltimerep.pull;
     stats.allTimePushUps.innerText = alltimerep.push;
