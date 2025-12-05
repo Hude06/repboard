@@ -228,24 +228,35 @@ async function verifyToken(id_token) {
 }
 
 document.getElementById("logoutBtn").addEventListener('click', logout);
-async function increaseRepCount(reps,type) {
-    const id = Date.now(); // simple unique ID based on timestamp
-    alltimerep[type] += reps;
-    currentValue[type] += reps;
+async function increaseRepCount(reps, type) {
+    // Debugging logs
+    console.log('--- increaseRepCount called ---');
+    console.log('repType:', type);
+    console.log('currentValue object:', currentValue);
+    console.log('alltimerep object:', alltimerep);
+    console.log('currentValue[type]:', currentValue[type]);
+    console.log('alltimerep[type]:', alltimerep[type]);
+
+    // Safe increment to prevent NaN
+    alltimerep[type] = (alltimerep[type] || 0) + reps;
+    currentValue[type] = (currentValue[type] || 0) + reps;
+
     repCount.textContent = currentValue[type];
-    console.log(alltimerep,currentValue[type]);
+    console.log('After increment -> currentValue[type]:', currentValue[type]);
+    console.log('After increment -> alltimerep[type]:', alltimerep[type]);
+
     stats.allTimePushUps.innerText = alltimerep.push;
     stats.allTimePullUps.innerText = alltimerep.pull;
     saveAllTimeReps();
 
     try {
         if (!userId) return; // skip if not signed in
-        await logServerRep(userId, type, reps, null,id);
-
+        await logServerRep(userId, type, reps, null, Date.now());
     } catch (error) {
         console.error("Error logging reps to server:", error);
     }
 }
+
 
 repTypeSelect.addEventListener('change', () => {
   repType = repTypeSelect.value;
