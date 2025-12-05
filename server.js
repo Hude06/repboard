@@ -71,13 +71,20 @@ app.post('/add-rep', (req, res) => {
 
     if (!users[userId]) return res.status(404).json({ error: 'User not found' });
 
+    // Map frontend type to backend key
+    const typeMap = { pushup: 'PushUp', pullup: 'PullUp' };
+    const normalizedType = type.toLowerCase();
+    const userKey = typeMap[normalizedType];
+
+    if (!userKey) return res.status(400).json({ error: 'Invalid rep type' });
+
     // Update totals
-    users[userId][type] = (users[userId][type] || 0) + reps;
+    users[userId][userKey] = (users[userId][userKey] || 0) + reps;
 
     // Save session info if provided
     if (sessionId) {
         if (!users[userId].sessions) users[userId].sessions = [];
-        users[userId].sessions.push({ sessionId, type, reps, timestamp: Date.now() });
+        users[userId].sessions.push({ sessionId, type: userKey, reps, timestamp: Date.now() });
     }
 
     // Log individual action
@@ -85,7 +92,7 @@ app.post('/add-rep', (req, res) => {
         user: users[userId].name,
         GooglAuth: userId,
         Reps: reps,
-        Type: type,
+        Type: userKey,
         sessionId: sessionId || null,
         timestamp: Date.now(),
         id: id || null
@@ -93,9 +100,10 @@ app.post('/add-rep', (req, res) => {
 
     saveData();
 
-    console.log('Logged reps:', repsLog[repsLog.length - 1], 'Total:', users[userId][type], type);
-    res.json({ success: true, total: users[userId][type] });
+    console.log('Logged reps:', repsLog[repsLog.length - 1], 'Total:', users[userId][userKey], userKey);
+    res.json({ success: true, total: users[userId][userKey] });
 });
+
 
 app.post('/get-all-reps', (req, res) => {
     const { userId } = req.body;
