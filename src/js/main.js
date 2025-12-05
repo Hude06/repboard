@@ -34,7 +34,7 @@ async function loadAllTimeRepsFromServerOrLocal() {
     }
 
     try {
-        const res = await fetch('http://localhost:3000/get-all-reps', {
+        const res = await fetch('https://apps.judemakes.dev/api:3000/get-all-reps', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId })
@@ -155,7 +155,7 @@ async function logServerRep(userId, type, reps, sessionId = null, id) {
     // Step 3: try to send each pending rep
     for (const rep of pendingReps) {
         try {
-            const res = await fetch('http://localhost:3000/add-rep', {
+            const res = await fetch('https://apps.judemakes.dev/api:3000/add-rep', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(rep)
@@ -180,7 +180,7 @@ async function logServerRep(userId, type, reps, sessionId = null, id) {
     return lastTotal;
 }
 function getServerReps(userId, type) {
-    fetch('http://localhost:3000/get-reps', {
+    fetch('https://apps.judemakes.dev/api:3000/get-reps', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ userId, type })
