@@ -6,6 +6,16 @@ let alltimerep = {
     push: 0,
     pull: 0
 }
+const reset = document.getElementById('reset');
+reset.addEventListener('click', () => {
+    currentValue = { push: 0, pull: 0 };
+    alltimerep = { push: 0, pull: 0 };
+    saveAllTimeReps();
+    repCount.textContent = currentValue[repType];
+    stats.allTimePushUps.innerText = alltimerep.push;
+    stats.allTimePullUps.innerText = alltimerep.pull;
+    console.log('Reset current and all-time reps to zero');
+});
 const repCount = document.getElementById('repCount');
 const repTypeSelect = document.getElementById('repType');
 const googleSignInButton = document.getElementById('googleSignInButton');
@@ -303,6 +313,7 @@ function showPage(pageId) {
 
   if (pageId === 'repPage') {
     buttons.repPageButton.classList.add('active');
+    repCount.textContent = currentValue[repType] || 0;
   } else if (pageId === 'profilePage') {
     loadAllTimeRepsFromServerOrLocal();
     buttons.profileButton.classList.add('active');
