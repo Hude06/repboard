@@ -12,7 +12,6 @@ reset.addEventListener('click', () => {
     increaseRepCount(-alltimerep.pull, 'pullup');
     currentValue = { push: 0, pull: 0 };
     alltimerep = { push: 0, pull: 0 };
-    saveAllTimeReps();
     repCount.textContent = currentValue[repType];
     stats.allTimePushUps.innerText = alltimerep.push;
     stats.allTimePullUps.innerText = alltimerep.pull;
