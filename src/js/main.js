@@ -10,11 +10,6 @@ const reset = document.getElementById('reset');
 reset.addEventListener('click', () => {
     increaseRepCount(-alltimerep.push, 'pushup');
     increaseRepCount(-alltimerep.pull, 'pullup');
-    currentValue = { push: 0, pull: 0 };
-    alltimerep = { push: 0, pull: 0 };
-    repCount.textContent = currentValue[repType];
-    stats.allTimePushUps.innerText = alltimerep.push;
-    stats.allTimePullUps.innerText = alltimerep.pull;
     console.log('Reset current and all-time reps to zero');
 });
 const repCount = document.getElementById('repCount');
