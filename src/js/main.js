@@ -7,7 +7,7 @@
 
 (() => {
   // --- Constants ---
-  const API_BASE = (location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://apps.judemakes.dev');
+  const API_BASE = (location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://apps.judemakes.dev/api');
 
   // --- App state ---
   let currentValue = { push: 0, pull: 0 };
