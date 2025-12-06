@@ -8,8 +8,8 @@ let alltimerep = {
 }
 const reset = document.getElementById('reset');
 reset.addEventListener('click', () => {
-    increaseRepCount(-alltimerep.push, 'push');
-    increaseRepCount(-alltimerep.pull, 'pull');
+    increaseRepCount(-alltimerep.push, 'pushup');
+    increaseRepCount(-alltimerep.pull, 'pullup');
     currentValue = { push: 0, pull: 0 };
     alltimerep = { push: 0, pull: 0 };
     saveAllTimeReps();
