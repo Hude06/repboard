@@ -8,7 +8,7 @@ const PORT = 3000;
 const CLIENT_ID = '630610710531-cs7afi140j0knbfn43mcjduj7etv5tbn.apps.googleusercontent.com';
 const client = new OAuth2Client(CLIENT_ID);
 
-app.use(cors());no
+app.use(cors());
 app.use(express.json());
 
 const DATA_FILE = './data.json';
