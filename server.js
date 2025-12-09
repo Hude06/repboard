@@ -8,7 +8,7 @@ const PORT = 3000;
 const CLIENT_ID = '630610710531-cs7afi140j0knbfn43mcjduj7etv5tbn.apps.googleusercontent.com';
 const client = new OAuth2Client(CLIENT_ID);
 
-app.use(cors());
+app.use(cors());no
 app.use(express.json());
 
 const DATA_FILE = './data.json';
@@ -38,34 +38,6 @@ function saveData() {
   }
 }
 
-// Verify Google user
-app.post('/verify-user', async (req, res) => {
-  const { token } = req.body;
-
-  if (!token) return res.status(400).json({ error: 'Token required' });
-
-  try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const userid = payload['sub'];
-    const username = payload['name'];
-    const email = payload['email'];
-
-    // Ensure user exists in data
-    if (!userData[userid]) {
-      userData[userid] = { pushups: 0, pullups: 0, username };
-      saveData();
-    }
-
-    res.json({ userid, username, email });
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-});
 app.post('/add-rep', (req, res) => {
   console.log("Adding rep to user");
 

@@ -8,7 +8,7 @@ import {
   setPersistence,
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-const SERVER_URL = "https://apps.judemakes.dev:3000/api";
+const SERVER_URL = "https://apps.judemakes.dev/api/add-rep";
 const HTML = {
   username: document.getElementById("username"),
   initialLetter: document.getElementById("initial"),
