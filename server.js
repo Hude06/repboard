@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { OAuth2Client } from 'google-auth-library';
 import fs from 'fs';
-import { json } from 'stream/consumers';
 
 const app = express();
 const PORT = 3000;
@@ -12,7 +11,7 @@ const client = new OAuth2Client(CLIENT_ID);
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = '../data.json';
+const DATA_FILE = './data.json';
 
 // Load data on startup
 let userData = {};
