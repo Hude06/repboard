@@ -8,6 +8,7 @@ import {
   setPersistence,
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+const SERVER_URL = "https://apps.judemakes.dev:3000/api";
 const HTML = {
   username: document.getElementById("username"),
   initialLetter: document.getElementById("initial"),
@@ -143,7 +144,7 @@ async function getTotalRepCountServer(type) {
   try {
     const count = 0
     let body = JSON.stringify({ userid: userId, type, count })
-    const res = await fetch('http://127.0.0.1:3000/add-rep', {
+    const res = await fetch(SERVER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: body
@@ -159,7 +160,7 @@ async function increaseRepCount(count, type) {
   try {
     let body = JSON.stringify({ userid: userId, type, count })
     console.log("body is",body)
-    const res = await fetch('http://127.0.0.1:3000/add-rep', {
+    const res = await fetch(SERVER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: body
