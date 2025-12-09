@@ -6,23 +6,19 @@
   <title>Rep Board</title>
   <link rel="stylesheet" href="./css/style.css">
   <link rel="stylesheet" href="./css/profile.css">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<meta name="apple-mobile-web-app-title" content="Rep Board">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script type="module" src="./js/main.js"></script>
+  <!-- Firebase SDK -->
 </head>
 <body>
   <!-- Rep Page -->
   <div id="repPage" class="page">
     <h1>Rep Page</h1>
-
     <!-- Selector for rep type -->
     <div class="repSelector">
       <label for="repType">Select Rep Type:</label>
       <select id="repType">
-        <option value="PushUp">Push-Ups</option>
-        <option value="PullUp">Pull-Ups</option>
+        <option value="pushup">Push-Ups</option>
+        <option value="pullup">Pull-Ups</option>
       </select>
     </div>
 
@@ -35,52 +31,49 @@
       <div class="incerment" id="incerment">+5</div>
     </div>
   </div>
-<div id="profilePage" class="page" style="display:none;">
-  <h1>Profile</h1>
 
-  <!-- Profile Picture / Initial Circle -->
-  <div class="profile-picture">
-    <div class="initial-circle" id = "initial">G</div>
-  </div>
-  <button id = "reset">Reset Current Count and All Time</button>
-  <button id="googleSignInButton" class="ghost-btn" aria-label="Sign in with Google">
-  Sign in with Google
-</button>
-
-  <!-- Username -->
-  <div id="username" class="username">Username</div>
-
-  <!-- Stats -->
-  <div id="stats" class="stats">
-    <div class="stat">
-      <div class="stat-number" id = "AllTimePushUpStat">1234</div>
-      <div class="stat-label">Push-Ups</div>
+  <!-- Profile Page -->
+  <div id="profilePage" class="page" style="display:none;">
+    <h1>Profile</h1>
+    <!-- Profile Picture / Initial Circle -->
+    <div class="profile-picture">
+      <div class="initial-circle" id="initial">G</div>
     </div>
-    <div class="stat">
-      <div class="stat-number" id = "AllTimePullUpStat">567</div>
-      <div class="stat-label">Pull-Ups</div>
+    <button id="reset">Reset Current Count and All Time</button>
+    <button id="googleSignInButton" class="ghost-btn" aria-label="Sign in with Google">
+      Sign in with Google
+    </button>
+    <!-- Username -->
+    <div id="username" class="username">Username</div>
+
+    <!-- Stats -->
+    <div id="stats" class="stats">
+      <div class="stat">
+        <div class="stat-number" id="AllTimePushUpStat">1234</div>
+        <div class="stat-label">Push-Ups</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number" id="AllTimePullUpStat">567</div>
+        <div class="stat-label">Pull-Ups</div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button id="editProfileBtn">Edit Name</button>
+      <button id="logoutBtn">Log Out</button>
     </div>
   </div>
 
-  <!-- Action Buttons -->
-  <div class="actions">
-    <button id="editProfileBtn">Edit Name</button>
-    <button id="logoutBtn">Log Out</button>
-  </div>
-</div>
-
-
-
+  <!-- Community Page -->
   <div id="communityPage" class="page" style="display:none;">
     <h1>Community Page</h1>
   </div>
 
   <div class="navbar">
-    <button id = "communityButton">Community</button>
-    <button id = "repPageButton" class="active">Rep</button>
-    <button id = "profileButton">Profile</button>
+    <button id="communityButton">Community</button>
+    <button id="repPageButton" class="active">Rep</button>
+    <button id="profileButton">Profile</button>
   </div>
-
-  <script type="module" src="./js/main.js"></script>
 </body>
 </html>

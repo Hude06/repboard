@@ -1,8 +1,8 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import fs from 'fs';
 import cors from 'cors';
 import { OAuth2Client } from 'google-auth-library';
+import fs from 'fs';
+import { json } from 'stream/consumers';
 
 const app = express();
 const PORT = 3000;
@@ -10,131 +10,105 @@ const CLIENT_ID = '630610710531-cs7afi140j0knbfn43mcjduj7etv5tbn.apps.googleuser
 const client = new OAuth2Client(CLIENT_ID);
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
-let users = {};      // loaded from data.json
-let repsLog = [];    // store individual reps/actions
+const DATA_FILE = '../data.json';
 
-// Load data on start
-try {
-    users = JSON.parse(fs.readFileSync('data.json'));
-} catch (e) {
-    console.log("No existing data, starting fresh");
-    users = {};
+// Load data on startup
+let userData = {};
+if (fs.existsSync(DATA_FILE)) {
+  try {
+    const json = fs.readFileSync(DATA_FILE, 'utf8');
+    userData = JSON.parse(json);
+    console.log("Data loaded:", userData);
+  } catch (err) {
+    console.error("Error reading data file:", err);
+    userData = {};
+  }
+} else {
+  userData = {};
 }
 
 // Save data helper
 function saveData() {
-    fs.writeFileSync('data.json', JSON.stringify(users, null, 2));
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(userData, null, 2), 'utf8');
+    console.log("Data saved successfully.");
+  } catch (err) {
+    console.error("Error saving data:", err);
+  }
 }
 
-// -------------------
-// Google Auth Endpoint
-// -------------------
-app.post('/verify-token', async (req, res) => {
-    const { id_token } = req.body;
-    if (!id_token) return res.status(400).json({ error: 'Missing token' });
+// Verify Google user
+app.post('/verify-user', async (req, res) => {
+  const { token } = req.body;
 
-    try {
-        const ticket = await client.verifyIdToken({
-            idToken: id_token,
-            audience: CLIENT_ID
-        });
+  if (!token) return res.status(400).json({ error: 'Token required' });
 
-        const payload = ticket.getPayload();
-        const userId = payload.sub;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: CLIENT_ID,
+    });
 
-        // Add user if doesn't exist
-        if (!users[userId]) {
-            users[userId] = {
-                name: payload.name,
-                email: payload.email,
-                PushUp: 0,
-                PullUp: 0,
-                sessions: []
-            };
-            saveData();
-        }
+    const payload = ticket.getPayload();
+    const userid = payload['sub'];
+    const username = payload['name'];
+    const email = payload['email'];
 
-        res.json({ success: true, user: users[userId], userId });
-    } catch (err) {
-        console.error(err);
-        res.status(401).json({ error: 'Invalid token' });
+    // Ensure user exists in data
+    if (!userData[userid]) {
+      userData[userid] = { pushups: 0, pullups: 0, username };
+      saveData();
     }
-});
 
-// -------------------
-// Add Rep Endpoint
-// -------------------
+    res.json({ userid, username, email });
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
 app.post('/add-rep', (req, res) => {
-    const { userId, type, reps, sessionId, id } = req.body;
+  console.log("Adding rep to user");
 
-    if (!users[userId]) return res.status(404).json({ error: 'User not found' });
+  const { userid, type, count } = req.body;
 
-    // Map frontend type to backend key
-    const typeMap = { pushup: 'PushUp', pullup: 'PullUp' };
-    const normalizedType = type.toLowerCase();
-    const userKey = typeMap[normalizedType];
+  // Validation checks
+  if (!userid || !type || typeof count !== 'number') {
+    return res.status(400).json({ error: 'Invalid request. Ensure all fields are provided and count is a number' });
+  }
 
-    if (!userKey) return res.status(400).json({ error: 'Invalid rep type' });
+  if (!['pushup', 'pullup'].includes(type)) {
+    return res.status(400).json({ error: 'Invalid exercise type. Allowed types are pushup or pullup' });
+  }
 
-    // Update totals
-    users[userId][userKey] = (users[userId][userKey] || 0) + reps;
+  // Check if user exists in userData, initialize if not
+  if (!userData[userid]) {
+    userData[userid] = { pushup: 0, pullup: 0 };
+  }
 
-    // Save session info if provided
-    if (sessionId) {
-        if (!users[userId].sessions) users[userId].sessions = [];
-        users[userId].sessions.push({ sessionId, type: userKey, reps, timestamp: Date.now() });
+  // Update the rep count
+  userData[userid][type] += count;
+
+  // Write updated data to file
+  fs.writeFile(DATA_FILE, JSON.stringify(userData, null, 2), (err) => {
+    if (err) {
+      console.error('Error writing to file', err);
+      return res.status(500).json({ error: 'Failed to save data' });
     }
 
-    // Log individual action
-    repsLog.push({
-        user: users[userId].name,
-        GooglAuth: userId,
-        Reps: reps,
-        Type: userKey,
-        sessionId: sessionId || null,
-        timestamp: Date.now(),
-        id: id || null
-    });
-
-    saveData();
-
-    console.log('Logged reps:', repsLog[repsLog.length - 1], 'Total:', users[userId][userKey], userKey);
-    res.json({ success: true, total: users[userId][userKey] });
+    // Successfully updated
+    res.status(200).json({ total: userData[userid][type] });
+  });
 });
 
 
-app.post('/get-all-reps', (req, res) => {
-    const { userId } = req.body;
-    if (!users[userId]) return res.status(404).json({ error: 'User not found' });
-    console.log('Fetching all-time reps for user:', users[userId].name, users[userId],users[userId].PushUp,users[userId].PullUp);
-    res.json({ 
-        success: true, 
-        allTime: { 
-            push: users[userId].PushUp || 0,
-            pull: users[userId].PullUp || 0
-        } 
-    });
-});
-// -------------------
-// Get Leaderboard
-// -------------------
-app.get('/leaderboard', (req, res) => {
-    const leaderboard = Object.values(users)
-        .map(u => ({
-            name: u.name,
-            PushUp: u.PushUp,
-            PullUp: u.PullUp
-        }))
-        .sort((a, b) => (b.PushUp + b.PullUp) - (a.PushUp + a.PullUp));
-
-    res.json(leaderboard);
+// Get total reps for a user
+app.get('/total/:userid', (req, res) => {
+  const { userid } = req.params;
+  if (!userData[userid]) return res.json({ pushups: 0, pullups: 0 });
+  res.json(userData[userid]);
 });
 
-// -------------------
-// Start server
-// -------------------
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

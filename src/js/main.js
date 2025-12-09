@@ -1,299 +1,250 @@
-let currentValue = { push: 0, pull: 0 };
-let alltimerep = { push: 0, pull: 0 };
-
-const reset = document.getElementById('reset');
-const repCount = document.getElementById('repCount');
-const repTypeSelect = document.getElementById('repType');
-const googleSignInButton = document.getElementById('googleSignInButton');
-const logoutBtn = document.getElementById('logoutBtn');
-
-let userId = null;
-let repType = 'push';
-let currentKeyboardKey = new Map();
-
-const pages = {
-  repPage: document.getElementById('repPage'),
-  profilePage: document.getElementById('profilePage'),
-  communityPage: document.getElementById('communityPage')
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+const HTML = {
+  username: document.getElementById("username"),
+  initialLetter: document.getElementById("initial"),
+  loginMessage: document.getElementById("loginMessage"),
+  repTypeSelect: document.getElementById('repType'),
+  repCount: document.getElementById("repCount"),
+  buttons: {
+    decrement: document.getElementById("decrement"),
+    incerment: document.getElementById("incerment"),
+    googleSignIn: document.getElementById("googleSignInButton"),
+    community: document.getElementById("communityButton"),
+    repPage: document.getElementById("repPageButton"),
+    profile: document.getElementById("profileButton"),
+    rep: document.getElementById("repButton"),
+    reset:document.getElementById("reset")
+  },
+  profilePage: {
+    alltimePush: document.getElementById("AllTimePushUpStat"),
+    alltimePull: document.getElementById("AllTimePullUpStat")
+  },
+  pages: {
+    repPage: document.getElementById("repPage"),
+    profilePage: document.getElementById("profilePage"),
+    communityPage: document.getElementById("communityPage"),
+  },
 };
 
-const stats = {
-  allTimePushUps: document.getElementById("AllTimePushUpStat"),
-  allTimePullUps: document.getElementById("AllTimePullUpStat")
+const firebaseConfig = {
+  apiKey: "AIzaSyDlzLqiIiRjOGZb1KUFHAv7SZmgP41LhKc",
+  authDomain: "repboard-77743.firebaseapp.com",
+  projectId: "repboard-77743",
+  storageBucket: "repboard-77743.firebasestorage.app",
+  messagingSenderId: "230840782970",
+  appId: "1:230840782970:web:b9ec5b19e82ea0a76aebc3",
+  measurementId: "G-7EWJ77ZXRQ"
 };
+let userId = null
+let username = "guest";
+const app = initializeApp(firebaseConfig);
+// after you create auth:
+const auth = getAuth(app);
 
-const buttons = {
-  repPageButton: document.getElementById('repPageButton'),
-  profileButton: document.getElementById('profileButton'),
-  communityButton: document.getElementById('communityButton'),
-  repButton: document.getElementById('repButton')
-};
+(async function initAuth() {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+  } catch (e) {
+    console.warn("Could not set persistence:", e);
+  }
 
-const increments = {
-  increment: document.getElementById('incerment'),
-  decrement: document.getElementById('decrement')
-};
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      userId = user.uid;
+      username = user.displayName || user.email || "user";
+      updateUserUI(username);
 
-// -------------------------
-// Utility: Update stats UI
-// -------------------------
-function updateStatsUI() {
-  stats.allTimePushUps.innerText = alltimerep.push;
-  stats.allTimePullUps.innerText = alltimerep.pull;
-  repCount.textContent = currentValue[repType] || 0;
+      // safe to call init now
+      await init();
+      if (navigator.onLine) await updateUIAllTimeReps();
+    } else {
+      userId = null;
+      username = "guest";
+      updateUserUI(username);
+    }
+  });
+})();
 
-  // Disable rep buttons for guests
-  const disabled = !userId;
-  buttons.repButton.disabled = disabled;
-  increments.increment.disabled = disabled;
-  increments.decrement.disabled = disabled;
-}
+HTML.buttons.googleSignIn.addEventListener('click', handleGoogleSignIn);
+document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+HTML.buttons.rep.addEventListener("click", () => handleRepButtonClick(1));
+HTML.buttons.incerment.addEventListener("click", () => handleRepButtonClick(5));
+HTML.buttons.decrement.addEventListener("click", () => handleRepButtonClick(-5));
+HTML.buttons.reset.addEventListener("click", async function() {
+  const push = await getTotalRepCountServer("pushup")
+  const pull = await getTotalRepCountServer("pullup")
 
-// -------------------------
-// Load all-time reps
-// -------------------------
-async function loadAllTimeRepsFromServerOrLocal() {
+  console.log(push,pull)
+  increaseRepCount(-push.total,"pushup")
+  increaseRepCount(-pull.total,"pullup")
+  updateUIAllTimeReps()
+})
+
+async function init() {
+  // safe: handle case when user isn't signed in yet
   if (!userId) {
-    loadAllTimeReps();
-    updateStatsUI();
+    console.log("No user signed in yet — skipping user-specific totals.");
     return;
   }
 
+  const push = await getTotalRepCountServer("pushup");
+  const pull = await getTotalRepCountServer("pullup");
+  console.log(push, pull);
+
+  if (HTML.repCount) {
+    HTML.repCount.innerText = HTML.repTypeSelect.value === "pushup"
+      ? (push?.total ?? 0)
+      : (pull?.total ?? 0);
+  }
+}
+
+
+function updateUserUI(name) {
+  HTML.username.innerText = name;
+  HTML.initialLetter.textContent = name.charAt(0).toUpperCase();
+  HTML.buttons.googleSignIn.style.display = name === "guest" ? "block" : "none";
+}
+async function handleGoogleSignIn() {
+  const provider = new GoogleAuthProvider();
   try {
-    const res = await fetch('https://apps.judemakes.dev/api/get-all-reps', {
+    const result = await signInWithPopup(auth, provider);
+    console.log("Signed in:", result.user.email);
+    // no localStorage writes, no manual userId/username assignments —
+    // onAuthStateChanged will run and update the UI.
+    showPage('profilePage');
+    // safe to call these but not required — onAuthStateChanged will run shortly
+    handleRepButtonClick(0);
+    if (navigator.onLine) updateUIAllTimeReps();
+  } catch (error) {
+    console.error("Sign-in error:", error);
+    showFallbackMessage("Sign-in failed. Try again.");
+  }
+}
+
+function handleLogout() {
+  signOut(auth).then(() => {
+    console.log("User signed out");
+    username = "guest"
+    userId = null
+    updateUserUI(username);
+    showPage('repPage');
+  }).catch((error) => console.error("Error signing out:", error));
+}
+async function getTotalRepCountServer(type) {
+  try {
+    const count = 0
+    let body = JSON.stringify({ userid: userId, type, count })
+    const res = await fetch('http://127.0.0.1:3000/add-rep', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
+      body: body
     });
-    const data = await res.json();
-    if (data.success && data.allTime) {
-      alltimerep = data.allTime;
-      console.log('Loaded all-time reps from server:', alltimerep);
-    } else {
-      console.warn('Failed to fetch server reps, using localStorage');
-      loadAllTimeReps();
-    }
+    const json = await res.json();
+    console.log("Reps updated:", json);
+    return json
   } catch (err) {
-    console.error('Error fetching all-time reps:', err);
-    loadAllTimeReps();
+    console.error("Failed to add reps:", err);
   }
-
-  updateStatsUI();
 }
-
-// -------------------------
-// Local storage helpers
-// -------------------------
-function logLocalStorageRep(userId, type, reps, sessionId = null, id) {
-  if (!userId) return;
-  const pendingReps = JSON.parse(localStorage.getItem('pendingReps') || '[]');
-  pendingReps.push({ userId, type, reps, sessionId, id, timestamp: Date.now() });
-  localStorage.setItem('pendingReps', JSON.stringify(pendingReps));
-}
-
-function getLocalStorageReps() {
-  return JSON.parse(localStorage.getItem('pendingReps') || '[]');
-}
-
-function setLocalStorageReps(reps) {
-  localStorage.setItem('pendingReps', JSON.stringify(reps));
-}
-
-function saveAllTimeReps() {
-  localStorage.setItem('alltimerep', JSON.stringify(alltimerep));
-}
-
-function loadAllTimeReps() {
-  const stored = localStorage.getItem('alltimerep');
-  if (stored) alltimerep = JSON.parse(stored);
-}
-
-// -------------------------
-// Rep logging
-// -------------------------
-async function logServerRep(userId, type, reps, sessionId = null, id) {
-  logLocalStorageRep(userId, type, reps, sessionId, id);
-
-  const pendingReps = getLocalStorageReps();
-  if (pendingReps.length === 0) return null;
-
-  const failedReps = [];
-  let lastTotal = null;
-
-  for (const rep of pendingReps) {
-    try {
-      const res = await fetch('https://apps.judemakes.dev/api/add-rep', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rep)
-      });
-      const data = await res.json();
-      if (data.success) {
-        lastTotal = data.total;
-      } else {
-        failedReps.push(rep);
-      }
-    } catch {
-      failedReps.push(rep);
-    }
+async function increaseRepCount(count, type) {
+  try {
+    let body = JSON.stringify({ userid: userId, type, count })
+    console.log("body is",body)
+    const res = await fetch('http://127.0.0.1:3000/add-rep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body
+    });
+    const json = await res.json();
+    console.log("Reps updated:", json);
+    if (HTML.repCount) HTML.repCount.textContent = json.total || 0;
+    updateUIAllTimeReps()
+  } catch (err) {
+    console.error("Failed to add reps:", err);
+    //showFallbackMessage("Failed to update reps. Try again later.");
   }
-
-  setLocalStorageReps(failedReps);
-  return lastTotal;
 }
-
-// -------------------------
-// Increase rep count
-// -------------------------
-async function increaseRepCount(reps, type) {
+function handleRepButtonClick(count) {
   if (!userId) {
-    alert("Please sign in to log reps!");
+    showFallbackMessage("Please sign in first.");
     return;
   }
 
-  type = type.toLowerCase();
-  alltimerep[type] = (alltimerep[type] || 0) + reps;
-  currentValue[type] = (currentValue[type] || 0) + reps;
-
-  updateStatsUI();
-  saveAllTimeReps();
-
-  try {
-    await logServerRep(userId, type, reps, null, Date.now());
-  } catch (error) {
-    console.error("Error logging reps to server:", error);
-  }
-}
-
-// -------------------------
-// Google Sign-In
-// -------------------------
-function handleCredentialResponse(response) {
-  const token = response.credential;
-  localStorage.setItem('id_token', token);
-
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  console.log("Decoded JWT payload:", payload);
-
-  verifyToken(token).then(data => {
-    const username = data.user.name;
-    localStorage.setItem('userId', data.userId);
-    localStorage.setItem('username', username);
-
-    userId = data.userId;
-    currentValue = { push: 0, pull: 0 };
-
-    updateUIForLoggedInUser(username);
-    loadAllTimeRepsFromServerOrLocal();
-  }).catch(err => {
-    console.error("Token verification failed:", err);
-    logout();
-  });
-}
-
-// -------------------------
-// Verify token via server
-// -------------------------
-async function verifyToken(id_token) {
-  const res = await fetch('https://apps.judemakes.dev/api/verify-token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id_token })
-  });
-  const data = await res.json();
-  return data;
-}
-
-// -------------------------
-// Update UI for logged-in user
-// -------------------------
-function updateUIForLoggedInUser(username = "Guest") {
-  document.getElementById("username").innerText = username;
-  document.getElementById("initial").innerText = username.charAt(0).toUpperCase();
-  googleSignInButton.style.display = username === "Guest" ? "block" : "none";
-  updateStatsUI();
-}
-
-// -------------------------
-// Logout
-// -------------------------
-function logout() {
-  userId = null;
-  currentValue = { push: 0, pull: 0 };
-  repCount.textContent = 0;
-
-  updateUIForLoggedInUser();
-}
-
-// -------------------------
-// Page switcher
-// -------------------------
-function showPage(pageId) {
-  for (const key in pages) {
-    pages[key].style.display = key === pageId ? 'block' : 'none';
+  if (!navigator.onLine) {
+    showFallbackMessage("You are offline. Cannot update reps.");
+    return;
   }
 
-  Object.values(buttons).forEach(btn => btn.classList?.remove('active'));
-
-  if (pageId === 'repPage') buttons.repPageButton.classList.add('active');
-  else if (pageId === 'profilePage') {
-    buttons.profileButton.classList.add('active');
-    loadAllTimeRepsFromServerOrLocal();
-  } else if (pageId === 'communityPage') {
-    buttons.communityButton.classList.add('active');
+  const type = HTML.repTypeSelect.value;
+  increaseRepCount(count, type)
+    .then(() => console.log("the rep count was incremented"))
+    .catch(() => console.log("an error happened"));
+}
+async function updateUIAllTimeReps() {
+    if (!userId) {
+    showFallbackMessage("Please sign in first.");
+    return;
   }
+
+  if (!navigator.onLine) {
+    showFallbackMessage("You are offline. Cannot update reps.");
+    return;
+  }
+  console.log("Working")
+  const push = await getTotalRepCountServer("pushup")
+  const pull = await getTotalRepCountServer("pullup")
+  console.log(push.total,pull.total,push,pull)
+  if (HTML.profilePage.alltimePull) {
+    HTML.profilePage.alltimePull.innerText = pull.total
+  }
+  if (HTML.profilePage.alltimePush) {
+    HTML.profilePage.alltimePush.innerText = push.total
+  }
+
 }
 
-// -------------------------
-// Event listeners
-// -------------------------
-window.addEventListener('DOMContentLoaded', () => {
-  // Initialize rep type
-  repType = repTypeSelect.value.toLowerCase();
+function showPage(pageKey) {
+  Object.values(HTML.pages).forEach(page => page.style.display = "none");
+  HTML.pages[pageKey].style.display = "block";
 
-  const storedUserId = localStorage.getItem('userId');
-  const storedUsername = localStorage.getItem('username');
-  if (storedUserId && storedUsername) {
-    userId = storedUserId;
-    updateUIForLoggedInUser(storedUsername);
-    loadAllTimeRepsFromServerOrLocal();
-  } else updateUIForLoggedInUser();
+  Object.values(HTML.buttons).forEach(btn => btn.classList.remove("active"));
 
-  // Initialize Google Sign-In once
-  google.accounts.id.initialize({
-    client_id: '630610710531-cs7afi140j0knbfn43mcjduj7etv5tbn.apps.googleusercontent.com',
-    callback: handleCredentialResponse
-  });
+  const buttonMap = {
+    repPage: "repPage",
+    profilePage: "profile",
+    communityPage: "community"
+  };
+
+  HTML.buttons[buttonMap[pageKey]]?.classList.add("active");
+}
+
+HTML.repTypeSelect.addEventListener("change", function() {
+  handleRepButtonClick(0)
+})
+HTML.buttons.repPage.addEventListener("click", function() {
+  showPage("repPage")
+  handleRepButtonClick(0)
 });
-
-googleSignInButton.addEventListener('click', () => google.accounts.id.prompt());
-logoutBtn.addEventListener('click', logout);
-
-repTypeSelect.addEventListener('change', () => {
-  repType = repTypeSelect.value.toLowerCase();
-  updateStatsUI();
+HTML.buttons.profile.addEventListener("click", function() {
+  showPage("profilePage")
+  updateUIAllTimeReps();
 });
-
-// Keyboard handling
-document.addEventListener('keydown', (event) => {
-  if (event.code === 'Space' && !currentKeyboardKey.get('Space')) {
-    increaseRepCount(1, repType);
+HTML.buttons.community.addEventListener("click", () => showPage("communityPage"));
+function showFallbackMessage(message) {
+  if (HTML.loginMessage) {
+    HTML.loginMessage.textContent = message;
+    HTML.loginMessage.style.color = "red";
+  } else {
+    alert(message);
   }
-  currentKeyboardKey.set(event.code, true);
-});
-document.addEventListener('keyup', (event) => {
-  currentKeyboardKey.set(event.code, false);
-});
-
-// Rep buttons
-buttons.repButton.addEventListener('click', () => increaseRepCount(1, repType));
-increments.increment.addEventListener('click', () => increaseRepCount(5, repType));
-increments.decrement.addEventListener('click', () => increaseRepCount(-5, repType));
-
-// Navbar buttons
-buttons.repPageButton.addEventListener('click', () => showPage('repPage'));
-buttons.profileButton.addEventListener('click', () => showPage('profilePage'));
-buttons.communityButton.addEventListener('click', () => showPage('communityPage'));
-
-// Show default page
-showPage('repPage');
+}
+updateUserUI(username);
