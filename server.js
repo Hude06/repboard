@@ -11,7 +11,7 @@ const client = new OAuth2Client(CLIENT_ID);
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = './data.json';
+const DATA_FILE = '../data.json';
 
 // Load data on startup
 let userData = {};
@@ -41,7 +41,7 @@ function saveData() {
 app.post('/add-rep', (req, res) => {
   console.log("Adding rep to user");
 
-  const { userid, type, count } = req.body;
+  const { userid, type, count, username } = req.body;
 
   // Validation checks
   if (!userid || !type || typeof count !== 'number') {
@@ -54,7 +54,8 @@ app.post('/add-rep', (req, res) => {
 
   // Check if user exists in userData, initialize if not
   if (!userData[userid]) {
-    userData[userid] = { pushup: 0, pullup: 0 };
+    console.log("name is " + username)
+    userData[userid] = { name: username, pushup: 0, pullup: 0 };
   }
 
   // Update the rep count
@@ -78,6 +79,9 @@ app.get('/total/:userid', (req, res) => {
   const { userid } = req.params;
   if (!userData[userid]) return res.json({ pushups: 0, pullups: 0 });
   res.json(userData[userid]);
+});
+app.get('/total', (req, res) => {
+  res.send(JSON.stringify(userData))
 });
 
 app.listen(PORT, () => {

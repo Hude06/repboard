@@ -8,7 +8,8 @@ import {
   setPersistence,
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-const SERVER_URL = "https://apps.judemakes.dev/api/add-rep";
+const SERVER_URL = "https://apps.judemakes.dev/api";
+// const SERVER_URL = "http://localhost:3000";
 const HTML = {
   username: document.getElementById("username"),
   initialLetter: document.getElementById("initial"),
@@ -143,8 +144,8 @@ function handleLogout() {
 async function getTotalRepCountServer(type) {
   try {
     const count = 0
-    let body = JSON.stringify({ userid: userId, type, count })
-    const res = await fetch(SERVER_URL, {
+    let body = JSON.stringify({ userid: userId, type, count, username })
+    const res = await fetch(SERVER_URL + "/add-rep", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: body
@@ -158,9 +159,9 @@ async function getTotalRepCountServer(type) {
 }
 async function increaseRepCount(count, type) {
   try {
-    let body = JSON.stringify({ userid: userId, type, count })
+    let body = JSON.stringify({ userid: userId, type, count, username })
     console.log("body is",body)
-    const res = await fetch(SERVER_URL, {
+    const res = await fetch(SERVER_URL + "/add-rep", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: body
@@ -227,6 +228,23 @@ function showPage(pageKey) {
 
   HTML.buttons[buttonMap[pageKey]]?.classList.add("active");
 }
+async function fetchTotalsServer() {
+  const res = await fetch(`${SERVER_URL}/total`);
+  if (!res.ok) throw new Error("Request failed");
+
+  const data = await res.json(); // ← object, not array
+  console.log(data);
+
+  const community = document.getElementById("community");
+  community.innerHTML = "";
+
+  Object.entries(data).forEach(([userid, user]) => {
+    const div = document.createElement("div");
+    div.textContent = `${user.name}: ${user.pushup} pushups, ${user.pullup} pullups`;
+    community.appendChild(div);
+  });
+}
+
 
 HTML.repTypeSelect.addEventListener("change", function() {
   handleRepButtonClick(0)
@@ -239,7 +257,12 @@ HTML.buttons.profile.addEventListener("click", function() {
   showPage("profilePage")
   updateUIAllTimeReps();
 });
-HTML.buttons.community.addEventListener("click", () => showPage("communityPage"));
+HTML.buttons.community.addEventListener("click", function() {
+  showPage("communityPage")
+  fetchTotalsServer();
+  console.log("We ran")
+  
+});
 function showFallbackMessage(message) {
   if (HTML.loginMessage) {
     HTML.loginMessage.textContent = message;
