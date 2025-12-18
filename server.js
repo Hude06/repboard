@@ -11,7 +11,7 @@ const client = new OAuth2Client(CLIENT_ID);
 app.use(cors());
 app.use(express.json());
 
-const DATA_FILE = '../data.json';
+const DATA_FILE = './data.json';
 
 // Load data on startup
 let userData = {};
