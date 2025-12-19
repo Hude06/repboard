@@ -47,7 +47,7 @@ const firebaseConfig = {
   measurementId: "G-7EWJ77ZXRQ"
 };
 let userId = null
-let username = "guest";
+let username = "GUEST";
 const app = initializeApp(firebaseConfig);
 // after you create auth:
 const auth = getAuth(app);
@@ -70,7 +70,7 @@ const auth = getAuth(app);
       if (navigator.onLine) await updateUIAllTimeReps();
     } else {
       userId = null;
-      username = "guest";
+      username = "GUEST";
       updateUserUI(username);
     }
   });
@@ -113,7 +113,7 @@ async function init() {
 function updateUserUI(name) {
   HTML.username.innerText = name;
   HTML.initialLetter.textContent = name.charAt(0).toUpperCase();
-  HTML.buttons.googleSignIn.style.display = name === "guest" ? "block" : "none";
+  HTML.buttons.googleSignIn.style.display = name === "GUEST" ? "flex" : "none";
 }
 async function handleGoogleSignIn() {
   const provider = new GoogleAuthProvider();
@@ -135,7 +135,7 @@ async function handleGoogleSignIn() {
 function handleLogout() {
   signOut(auth).then(() => {
     console.log("User signed out");
-    username = "guest"
+    username = "GUEST"
     userId = null
     updateUserUI(username);
     showPage('repPage');
@@ -216,7 +216,7 @@ async function updateUIAllTimeReps() {
 
 function showPage(pageKey) {
   Object.values(HTML.pages).forEach(page => page.style.display = "none");
-  HTML.pages[pageKey].style.display = "block";
+  HTML.pages[pageKey].style.display = ""; // restores the CSS default
 
   Object.values(HTML.buttons).forEach(btn => btn.classList.remove("active"));
 
@@ -255,7 +255,9 @@ HTML.buttons.repPage.addEventListener("click", function() {
 });
 HTML.buttons.profile.addEventListener("click", function() {
   showPage("profilePage")
-  updateUIAllTimeReps();
+  if (userId) {
+    updateUIAllTimeReps();
+  }
 });
 HTML.buttons.community.addEventListener("click", function() {
   showPage("communityPage")
