@@ -107,7 +107,9 @@ document.getElementById("reset_current_count").addEventListener("click", () => {
   sessionReps[type] = 0;
   HTML.repCount.innerText = 0;
 });
-
+document.getElementById("resetLocalStorage").addEventListener("click", () => {
+  localStorage.clear();
+});
 
 function init() {
   if (!userId) return;
