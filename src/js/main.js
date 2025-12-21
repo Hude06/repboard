@@ -109,6 +109,7 @@ document.getElementById("reset_current_count").addEventListener("click", () => {
 });
 document.getElementById("resetLocalStorage").addEventListener("click", () => {
   localStorage.clear();
+  location.reload();  
 });
 
 function init() {
