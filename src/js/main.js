@@ -36,7 +36,10 @@ const HTML = {
     communityPage: document.getElementById("communityPage"),
   },
 };
-
+let sessionReps = {
+  pushup: 0,
+  pullup: 0,
+};
 const firebaseConfig = {
   apiKey: "AIzaSyDlzLqiIiRjOGZb1KUFHAv7SZmgP41LhKc",
   authDomain: "repboard-77743.firebaseapp.com",
@@ -81,33 +84,41 @@ document.getElementById("logoutBtn").addEventListener("click", handleLogout);
 HTML.buttons.rep.addEventListener("click", () => handleRepButtonClick(1));
 HTML.buttons.incerment.addEventListener("click", () => handleRepButtonClick(5));
 HTML.buttons.decrement.addEventListener("click", () => handleRepButtonClick(-5));
-HTML.buttons.reset.addEventListener("click", async function() {
-  const push = await getTotalRepCountServer("pushup")
-  const pull = await getTotalRepCountServer("pullup")
 
-  console.log(push,pull)
-  increaseRepCount(-push.total,"pushup")
-  increaseRepCount(-pull.total,"pullup")
-  updateUIAllTimeReps()
-})
-
-async function init() {
-  // safe: handle case when user isn't signed in yet
-  if (!userId) {
-    console.log("No user signed in yet — skipping user-specific totals.");
-    return;
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space") {
+    e.preventDefault(); // stops page scroll
+    handleRepButtonClick(1);
   }
+});
 
-  const push = await getTotalRepCountServer("pushup");
-  const pull = await getTotalRepCountServer("pullup");
-  console.log(push, pull);
+// HTML.buttons.reset.addEventListener("click", async function() {
+//   const push = await getTotalRepCountServer("pushup")
+//   const pull = await getTotalRepCountServer("pullup")
 
-  if (HTML.repCount) {
-    HTML.repCount.innerText = HTML.repTypeSelect.value === "pushup"
-      ? (push?.total ?? 0)
-      : (pull?.total ?? 0);
-  }
+//   console.log(push,pull)
+//   increaseRepCount(-push.total,"pushup")
+//   increaseRepCount(-pull.total,"pullup")
+//   updateUIAllTimeReps()
+// })
+document.getElementById("reset_current_count").addEventListener("click", () => {
+  const type = HTML.repTypeSelect.value;
+  localStorage.removeItem(`sessionReps.${type}`);
+  sessionReps[type] = 0;
+  HTML.repCount.innerText = 0;
+});
+
+
+function init() {
+  if (!userId) return;
+
+  // rep page should always start at 0
+  sessionReps.pushup = Number(localStorage.getItem("sessionReps.pushup")) || 0;
+  sessionReps.pullup = Number(localStorage.getItem("sessionReps.pullup")) || 0;
+
+  HTML.repCount.innerText = sessionReps[HTML.repTypeSelect.value];
 }
+
 
 
 function updateUserUI(name) {
@@ -124,7 +135,6 @@ async function handleGoogleSignIn() {
     // onAuthStateChanged will run and update the UI.
     showPage('profilePage');
     // safe to call these but not required — onAuthStateChanged will run shortly
-    handleRepButtonClick(0);
     if (navigator.onLine) updateUIAllTimeReps();
   } catch (error) {
     console.error("Sign-in error:", error);
@@ -168,8 +178,6 @@ async function increaseRepCount(count, type) {
     });
     const json = await res.json();
     console.log("Reps updated:", json);
-    if (HTML.repCount) HTML.repCount.textContent = json.total || 0;
-    updateUIAllTimeReps()
   } catch (err) {
     console.error("Failed to add reps:", err);
     //showFallbackMessage("Failed to update reps. Try again later.");
@@ -182,15 +190,24 @@ function handleRepButtonClick(count) {
   }
 
   if (!navigator.onLine) {
-    showFallbackMessage("You are offline. Cannot update reps.");
+    showFallbackMessage("You are offline.");
     return;
   }
 
   const type = HTML.repTypeSelect.value;
-  increaseRepCount(count, type)
-    .then(() => console.log("the rep count was incremented"))
-    .catch(() => console.log("an error happened"));
+
+  // session (UI only)
+  sessionReps[type] += count;
+  if (sessionReps[type] < 0) sessionReps[type] = 0; // guard
+  localStorage.setItem(`sessionReps.${type}`, sessionReps[type]);
+  HTML.repCount.innerText = sessionReps[type];
+
+  // all-time (server)
+  if (count !== 0) {
+    increaseRepCount(count, type);
+  }
 }
+
 async function updateUIAllTimeReps() {
     if (!userId) {
     showFallbackMessage("Please sign in first.");
@@ -229,30 +246,42 @@ function showPage(pageKey) {
   HTML.buttons[buttonMap[pageKey]]?.classList.add("active");
 }
 async function fetchTotalsServer() {
-  const res = await fetch(`${SERVER_URL}/total`);
-  if (!res.ok) throw new Error("Request failed");
+const res = await fetch(`${SERVER_URL}/total`);
+if (!res.ok) throw new Error("Request failed");
 
-  const data = await res.json(); // ← object, not array
-  console.log(data);
+const data = await res.json();
 
-  const community = document.getElementById("community");
-  community.innerHTML = "";
+const community = document.getElementById("community");
+community.innerHTML = "";
 
-  Object.entries(data).forEach(([userid, user]) => {
+Object.entries(data)
+  .map(([userid, user]) => ({
+    userid,
+    name: user.name,
+    pushup: user.pushup ?? 0,
+    pullup: user.pullup ?? 0,
+    total: (user.pushup ?? 0) + (user.pullup ?? 0),
+  }))
+  .sort((a, b) => b.total - a.total)
+  .forEach(user => {
     const div = document.createElement("div");
-    div.textContent = `${user.name}: ${user.pushup} pushups, ${user.pullup} pullups`;
+    div.textContent = `${user.name}: ${user.total} total reps (${user.pushup} pushups, ${user.pullup} pullups)`;
     community.appendChild(div);
   });
 }
 
 
-HTML.repTypeSelect.addEventListener("change", function() {
-  handleRepButtonClick(0)
-})
-HTML.buttons.repPage.addEventListener("click", function() {
-  showPage("repPage")
-  handleRepButtonClick(0)
+HTML.repTypeSelect.addEventListener("change", () => {
+  const type = HTML.repTypeSelect.value;
+  HTML.repCount.innerText = sessionReps[type];
 });
+
+HTML.buttons.repPage.addEventListener("click", () => {
+  showPage("repPage");
+  const type = HTML.repTypeSelect.value;
+  HTML.repCount.innerText = sessionReps[type];
+});
+
 HTML.buttons.profile.addEventListener("click", function() {
   showPage("profilePage")
   if (userId) {
