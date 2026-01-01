@@ -38,6 +38,22 @@ function saveData() {
   }
 }
 
+app.post('/yearly-goal', async (req, res) => {
+  // this endppoint will be true when user has reached their daily goal of 1 or 2 or whatevery day it and all we do is save it to there user data
+  const { userid } = req.body;
+
+  if (!userid) {
+    return res.status(400).json({ error: 'Invalid request. UserID is required.' });
+  }
+
+  if (!userData[userid]) {
+    return res.status(404).json({ error: 'User not found.' });
+  }
+
+  userData[userid].yearlyGoalAchieved = true;
+  saveData();
+
+});
 app.post('/add-rep', (req, res) => {
   console.log("Adding rep to user");
 

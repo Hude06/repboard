@@ -16,6 +16,7 @@ const HTML = {
   loginMessage: document.getElementById("loginMessage"),
   repTypeSelect: document.getElementById('repType'),
   repCount: document.getElementById("repCount"),
+  yearGoal: document.getElementById("yearlyGoal"),
   buttons: {
     decrement: document.getElementById("decrement"),
     incerment: document.getElementById("incerment"),
@@ -92,6 +93,20 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+function updateYearlyGoal(currentCount) {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((now - startOfYear) / 86400000) + 1;
+
+  const goal = (dayOfYear * (dayOfYear + 1)) / 2;
+  HTML.yearGoal.innerText = currentCount + "/" + goal + " reps toward yearly goal";
+
+  if (currentCount >= goal) {
+
+  }
+
+}
+
 // HTML.buttons.reset.addEventListener("click", async function() {
 //   const push = await getTotalRepCountServer("pushup")
 //   const pull = await getTotalRepCountServer("pullup")
@@ -120,6 +135,7 @@ function init() {
   sessionReps.pullup = Number(localStorage.getItem("sessionReps.pullup")) || 0;
 
   HTML.repCount.innerText = sessionReps[HTML.repTypeSelect.value];
+  updateYearlyGoal(sessionReps[HTML.repTypeSelect.value]);
 }
 
 
@@ -249,28 +265,28 @@ function showPage(pageKey) {
   HTML.buttons[buttonMap[pageKey]]?.classList.add("active");
 }
 async function fetchTotalsServer() {
-const res = await fetch(`${SERVER_URL}/total`);
-if (!res.ok) throw new Error("Request failed");
+  const res = await fetch(`${SERVER_URL}/total`);
+  if (!res.ok) throw new Error("Request failed");
 
-const data = await res.json();
+  const data = await res.json();
 
-const community = document.getElementById("community");
-community.innerHTML = "";
+  const community = document.getElementById("community");
+  community.innerHTML = "";
 
-Object.entries(data)
-  .map(([userid, user]) => ({
-    userid,
-    name: user.name,
-    pushup: user.pushup ?? 0,
-    pullup: user.pullup ?? 0,
-    total: (user.pushup ?? 0) + (user.pullup ?? 0),
-  }))
-  .sort((a, b) => b.total - a.total)
-  .forEach(user => {
-    const div = document.createElement("div");
-    div.textContent = `${user.name}: ${user.total} total reps (${user.pushup} pushups, ${user.pullup} pullups)`;
-    community.appendChild(div);
-  });
+  Object.entries(data)
+    .map(([userid, user]) => ({
+      userid,
+      name: user.name,
+      pushup: user.pushup ?? 0,
+      pullup: user.pullup ?? 0,
+      total: (user.pushup ?? 0) + (user.pullup ?? 0),
+    }))
+    .sort((a, b) => b.total - a.total)
+    .forEach(user => {
+      const div = document.createElement("div");
+      div.textContent = `${user.name}: ${user.total} total reps (${user.pushup} pushups, ${user.pullup} pullups)` + (user.yearlyGoalAchieved ? " 🎉" : " not yet");
+      community.appendChild(div);
+    });
 }
 
 
