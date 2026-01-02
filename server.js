@@ -51,6 +51,7 @@ app.post('/yearly-goal', async (req, res) => {
   }
 
   userData[userid].yearlyGoalAchieved = true;
+  console.log(`User ${userid} has achieved their yearly goal.`);
   saveData();
 
 });
