@@ -93,7 +93,6 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-let yearlyGoalSent = false;
 
 function updateYearlyGoal(currentCount) {
   const now = new Date();
@@ -107,8 +106,7 @@ function updateYearlyGoal(currentCount) {
     `${currentCount}/${goal} reps toward yearly goal`;
 
   // Correct comparison + one-time send
-  if (currentCount >= goal && !yearlyGoalSent) {
-    yearlyGoalSent = true;
+  if (currentCount >= goal) {
 
     fetch(`${SERVER_URL}/yearly-goal`, {
       method: 'POST',
@@ -125,7 +123,6 @@ function updateYearlyGoal(currentCount) {
       })
       .catch(err => {
         console.error("Failed to update yearly goal:", err);
-        yearlyGoalSent = false; // allow retry on failure
       });
   }
 }
