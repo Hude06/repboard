@@ -301,6 +301,7 @@ async function fetchTotalsServer() {
       name: user.name,
       pushup: user.pushup ?? 0,
       pullup: user.pullup ?? 0,
+      yearlyGoalAchieved: !!user.yearlyGoalAchieved,
       total: (user.pushup ?? 0) + (user.pullup ?? 0),
     }))
     .sort((a, b) => b.total - a.total)
