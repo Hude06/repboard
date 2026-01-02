@@ -309,6 +309,7 @@ async function fetchTotalsServer() {
     .sort((a, b) => b.total - a.total)
     .forEach(user => {
       const div = document.createElement("div");
+      console.log(user)
       div.textContent = `${user.name}: ${user.total} total reps (${user.pushup} pushups, ${user.pullup} pullups)` + (user.yearlyGoalAchieved ? " 🎉" : " not yet");
       community.appendChild(div);
     });
