@@ -93,31 +93,43 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+let yearlyGoalSent = false;
+
 function updateYearlyGoal(currentCount) {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const dayOfYear = Math.floor((now - startOfYear) / 86400000) + 1;
 
   const goal = (dayOfYear * (dayOfYear + 1)) / 2;
-  HTML.yearGoal.innerText = currentCount + "/" + goal + " reps toward yearly goal";
 
-  if (currentCount >= goal) {
+  // Progress text
+  HTML.yearGoal.innerText =
+    `${currentCount}/${goal} reps toward yearly goal`;
+
+  // Correct comparison + one-time send
+  if (currentCount >= goal && !yearlyGoalSent) {
+    yearlyGoalSent = true;
+
     fetch(`${SERVER_URL}/yearly-goal`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userid: userId })
     })
-    .then(res => res.json())
-    .then(json => {
-      console.log("Yearly goal achieved:", json);
-      HTML.yearGoal.innerText = "🎉 Yearly Goal Achieved! 🎉";
-    })
-    .catch(err => {
-      console.error("Failed to update yearly goal:", err);
-    });
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(json => {
+        console.log("Yearly goal achieved:", json);
+        HTML.yearGoal.innerText = "🎉 Yearly Goal Achieved! 🎉";
+      })
+      .catch(err => {
+        console.error("Failed to update yearly goal:", err);
+        yearlyGoalSent = false; // allow retry on failure
+      });
   }
-
 }
+
 
 // HTML.buttons.reset.addEventListener("click", async function() {
 //   const push = await getTotalRepCountServer("pushup")

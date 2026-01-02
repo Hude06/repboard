@@ -39,7 +39,6 @@ function saveData() {
 }
 
 app.post('/yearly-goal', async (req, res) => {
-  // this endppoint will be true when user has reached their daily goal of 1 or 2 or whatevery day it and all we do is save it to there user data
   const { userid } = req.body;
 
   if (!userid) {
@@ -54,7 +53,9 @@ app.post('/yearly-goal', async (req, res) => {
   console.log(`User ${userid} has achieved their yearly goal.`);
   saveData();
 
+  return res.json({ success: true });
 });
+
 app.post('/add-rep', (req, res) => {
   console.log("Adding rep to user");
 
