@@ -102,7 +102,19 @@ function updateYearlyGoal(currentCount) {
   HTML.yearGoal.innerText = currentCount + "/" + goal + " reps toward yearly goal";
 
   if (currentCount >= goal) {
-
+    fetch(`${SERVER_URL}/yearly-goal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userid: userId })
+    })
+    .then(res => res.json())
+    .then(json => {
+      console.log("Yearly goal achieved:", json);
+      HTML.yearGoal.innerText = "🎉 Yearly Goal Achieved! 🎉";
+    })
+    .catch(err => {
+      console.error("Failed to update yearly goal:", err);
+    });
   }
 
 }
@@ -225,6 +237,7 @@ function handleRepButtonClick(count) {
   if (count !== 0) {
     increaseRepCount(count, type);
   }
+  updateYearlyGoal(sessionReps[type]);
 }
 
 async function updateUIAllTimeReps() {
