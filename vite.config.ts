@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  plugins: [react()],
   root: './src',
   build: {
     outDir: '../dist',
-    minify: false,
+    minify: true,
     emptyOutDir: true,
   },
   server: {
-    hmr: false, // Disable HMR for now since it's causing overlay issues
+    hmr: true,
   },
 });

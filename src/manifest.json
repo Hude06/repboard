@@ -1,13 +1,26 @@
 {
-  "name": "App",
-  "short_name": "App",
-  "start_url": "index.html",
+  "name": "RepBoard",
+  "short_name": "RepBoard",
+  "description": "Track push-ups, climb the leaderboard, and view athlete profiles.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "icons": [{
-    "src": "assets/imgs/logo.png",
-    "sizes": "512x512",
-    "type": "image/png"
-  }],
-  "background_color": "#31d53d",
-  "theme_color": "#31d53d"
+  "orientation": "portrait-primary",
+  "background_color": "#050607",
+  "theme_color": "#06110c",
+  "categories": ["fitness", "health", "sports"],
+  "icons": [
+    {
+      "src": "assets/icon/pushup-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/pushup-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

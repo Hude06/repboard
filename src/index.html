@@ -1,138 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#06110c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RepBoard">
   <title>RepBoard</title>
   <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./assets/icon/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="./css/profile.css">
-  <link rel="stylesheet" href="./css/community.css">
-  <script type="module" src="./js/main-new.js"></script>
 </head>
 <body>
-  <div class="app-background" aria-hidden="true"></div>
-
-  <header class="app-header">
-    <p class="app-kicker">RepBoard</p>
-    <h1>Train daily. Rank globally.</h1>
-  </header>
-
-  <div id="loginMessage" class="app-message" role="status" aria-live="polite"></div>
-
-  <main class="app-shell">
-    <section id="repPage" class="page">
-      <div class="panel rep-panel">
-        <div class="panel-header">
-          <h2>Rep Counter</h2>
-          <p>Current type: <strong id="currentRepTypeLabel">Push-Ups</strong></p>
-        </div>
-
-        <div class="repRow">
-          <button class="increment" id="decrement" aria-label="Remove five reps">-5</button>
-          <button id="repButton" aria-label="Add one rep">
-            <span class="rep-action">+1</span>
-            <span id="repCount">0</span>
-          </button>
-          <button class="increment" id="increment" aria-label="Add five reps">+5</button>
-        </div>
-
-        <div class="rep-panel-footer">
-          <button id="reset_current_count" class="ghost-btn">Reset session reps</button>
-          <div id="queueStatus" class="queue-status" style="display: none;">
-            <span id="queueCount">0</span> pending sync
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="leaderboardPage" class="page" style="display:none;">
-      <div class="panel leaderboard-panel">
-        <div class="panel-header">
-          <h2>Leaderboard</h2>
-          <p>See top push-up totals and open public profiles.</p>
-        </div>
-
-        <label class="search-input-wrap" for="leaderboardSearch">
-          <input id="leaderboardSearch" type="search" placeholder="Search athletes..." autocomplete="off">
-        </label>
-
-        <div id="community" class="community"></div>
-      </div>
-    </section>
-
-    <section id="profilePage" class="page" style="display:none;">
-      <div class="panel profile-panel">
-        <div class="profile-head">
-          <div class="profile-picture">
-            <div class="initial-circle" id="initial">G</div>
-          </div>
-          <div>
-            <p class="profile-overline">Athlete profile</p>
-            <h2 id="username" class="username">Guest</h2>
-          </div>
-        </div>
-
-        <div id="stats" class="stats">
-          <div class="stat">
-            <div class="stat-number" id="AllTimePushUpStat">0</div>
-            <div class="stat-label">Push-Ups</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number" id="AllTimePullUpStat">0</div>
-            <div class="stat-label">Pull-Ups</div>
-          </div>
-        </div>
-
-        <div class="settings-block">
-          <h3>Settings</h3>
-          <label for="preferredRepType">Default rep type</label>
-          <select id="preferredRepType">
-            <option value="pushup">Push-Ups</option>
-            <option value="pullup">Pull-Ups</option>
-          </select>
-        </div>
-
-        <div class="heatmap-block">
-          <h3>Push-Up Calendar</h3>
-          <div id="profileHeatmap" class="pushup-heatmap" aria-label="Your push-up history heatmap"></div>
-          <div class="heatmap-legend">
-            <span>0</span>
-            <span class="heat-dot level-1"></span>
-            <span class="heat-dot level-2"></span>
-            <span class="heat-dot level-3"></span>
-            <span class="heat-dot level-4"></span>
-            <span>high</span>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="googleSignInButton" class="primary-btn" aria-label="Sign in with Google">Sign in with Google</button>
-          <button id="logoutBtn" class="ghost-btn">Log out</button>
-          <button id="resetLocalStorage" class="ghost-btn">Reset local session</button>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div id="publicProfileModal" class="modal" style="display:none;" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="publicProfileName">
-      <button id="closePublicProfileModal" class="modal-close" aria-label="Close profile">x</button>
-      <p class="profile-overline">Public profile</p>
-      <h3 id="publicProfileName">Athlete</h3>
-      <p id="publicProfilePushupTotal" class="public-total">0 push-ups</p>
-      <div id="publicProfileHeatmap" class="pushup-heatmap" aria-label="Public push-up history heatmap"></div>
-    </div>
-  </div>
-
-  <nav class="navbar">
-    <button id="leaderboardButton">Leaderboard</button>
-    <button id="repPageButton" class="active">Rep</button>
-    <button id="profileButton">Profile</button>
-  </nav>
+  <div id="root"></div>
+  <script type="module" src="./main.jsx"></script>
 </body>
 </html>

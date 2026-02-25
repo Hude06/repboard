@@ -193,6 +193,18 @@ export class APIClient {
       const response = await this.fetchWithRetry(`/profile/${userId}`);
       return await response.json();
     } catch (error) {
+      if (error.message.includes('HTTP 404')) {
+        const totals = await this.getUserTotals(userId);
+        return {
+          userid: userId,
+          name: totals.name || 'Athlete',
+          pushup: totals.pushup || 0,
+          pullup: totals.pullup || 0,
+          preferredRepType: totals.preferredRepType || 'pushup',
+          dailyPushups: {}
+        };
+      }
+
       this.handleError(error, 'get public profile');
     }
   }

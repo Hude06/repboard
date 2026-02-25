@@ -108,6 +108,8 @@ export const StorageUtils = {
  * DOM utilities
  */
 export const DOMUtils = {
+  messageTimeout: null,
+
   /**
    * Safely gets element by ID with error handling
    * @param {string} id - Element ID
@@ -130,9 +132,19 @@ export const DOMUtils = {
     const messageElement = DOMUtils.getElement('loginMessage');
     if (messageElement) {
       messageElement.textContent = message;
-      messageElement.style.color = type === 'error' ? 'red' : 
-                                  type === 'success' ? 'green' : 
-                                  'inherit';
+      messageElement.style.color = type === 'error'
+        ? '#f16e76'
+        : type === 'success'
+          ? '#14ce7c'
+          : '#8f9da4';
+
+      if (DOMUtils.messageTimeout) {
+        clearTimeout(DOMUtils.messageTimeout);
+      }
+
+      DOMUtils.messageTimeout = setTimeout(() => {
+        messageElement.textContent = '';
+      }, 2800);
     } else {
       // Fallback to alert
       alert(message);

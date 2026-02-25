@@ -1,39 +1,38 @@
-// Test setup file
-import { beforeEach, afterEach, vi } from 'vitest';
+import "@testing-library/jest-dom/vitest";
+import { afterEach, beforeEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
 
-// Mock localStorage
+const memoryStore = {};
+
 const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn()
+  getItem: vi.fn((key) => (key in memoryStore ? memoryStore[key] : null)),
+  setItem: vi.fn((key, value) => {
+    memoryStore[key] = String(value);
+  }),
+  removeItem: vi.fn((key) => {
+    delete memoryStore[key];
+  }),
+  clear: vi.fn(() => {
+    Object.keys(memoryStore).forEach((key) => delete memoryStore[key]);
+  }),
+  key: vi.fn((index) => Object.keys(memoryStore)[index] || null),
+  get length() {
+    return Object.keys(memoryStore).length;
+  },
 };
 
-global.localStorage = localStorageMock;
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+  configurable: true,
+});
 
-// Mock fetch
 global.fetch = vi.fn();
 
-// Mock console methods to reduce noise in tests
-global.console = {
-  ...console,
-  // Uncomment to suppress console.log in tests
-  // log: vi.fn(),
-  // warn: vi.fn(),
-  // error: vi.fn(),
-};
-
 beforeEach(() => {
-  // Clear all mocks before each test
   vi.clearAllMocks();
-  localStorageMock.getItem.mockClear();
-  localStorageMock.setItem.mockClear();
-  localStorageMock.removeItem.mockClear();
-  localStorageMock.clear.mockClear();
+  Object.keys(memoryStore).forEach((key) => delete memoryStore[key]);
 });
 
 afterEach(() => {
-  // Cleanup after each test
+  cleanup();
 });

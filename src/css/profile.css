@@ -1,0 +1,170 @@
+.profile-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-picture {
+  width: 66px;
+  height: 66px;
+}
+
+.initial-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(165deg, #10261a 0%, #153023 100%);
+  border: 1px solid #224434;
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.profile-overline {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.username {
+  margin: 3px 0 0;
+  font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  font-size: 1.35rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0a1216;
+  padding: 12px;
+}
+
+.stat-number {
+  font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  font-size: 1.5rem;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.stat-label {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.settings-block,
+.heatmap-block {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #0b1318;
+  padding: 14px;
+}
+
+.settings-block h3,
+.heatmap-block h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.settings-block label {
+  display: block;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-size: 0.88rem;
+}
+
+.pushup-heatmap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  grid-auto-flow: column;
+  grid-auto-columns: 12px;
+  gap: 4px;
+  width: fit-content;
+}
+
+.heat-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.heat-cell.level-0,
+.heat-dot.level-0 {
+  background: #000000;
+}
+
+.heat-cell.level-1,
+.heat-dot.level-1 {
+  background: #0d2b18;
+}
+
+.heat-cell.level-2,
+.heat-dot.level-2 {
+  background: #0f4a25;
+}
+
+.heat-cell.level-3,
+.heat-dot.level-3 {
+  background: #106a2e;
+}
+
+.heat-cell.level-4,
+.heat-dot.level-4 {
+  background: #13953d;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.heat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 620px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .actions .primary-btn,
+  .actions .ghost-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

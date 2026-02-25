@@ -99,7 +99,7 @@ export class RepCounterComponent {
     const currentCount = stateManager.state.reps.session[currentExercise];
 
     if (currentCount > 0) {
-      this.applyRepDelta(-currentCount);
+      stateManager.updateReps(currentExercise, -currentCount, true);
       DOMUtils.showMessage(`${EXERCISE_DISPLAY_NAMES[currentExercise]} session reset`, "success");
     }
   }
