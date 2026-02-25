@@ -330,7 +330,9 @@ function onAuthStateChange(callback) {
     return () => {};
   }
 
-  assertSupabaseConfigured();
+  if (!hasSupabaseEnv || !supabase) {
+    return () => {};
+  }
 
   const {
     data: { subscription },

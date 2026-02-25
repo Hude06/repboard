@@ -1,6 +1,6 @@
 {
-  "name": "RepBoard",
-  "short_name": "RepBoard",
+  "name": "REPBOARD",
+  "short_name": "REPBOARD",
   "description": "Track push-ups, climb the leaderboard, and view athlete profiles.",
   "start_url": "/",
   "scope": "/",

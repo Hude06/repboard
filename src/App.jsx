@@ -63,6 +63,7 @@ export default function App({ apiClient }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [verificationNotice, setVerificationNotice] = useState("");
   const messageTimeoutRef = useRef(null);
 
   const preferredRepType = profile?.preferredRepType || fallbackPreferredRepType;
@@ -176,6 +177,7 @@ export default function App({ apiClient }) {
 
   async function handleGoogleSignIn() {
     try {
+      setVerificationNotice("");
       await api.signInWithGoogle();
       showMessage("Opening Google sign-in...");
     } catch (error) {
@@ -213,6 +215,7 @@ export default function App({ apiClient }) {
       if (authMode === AUTH_MODE.SIGN_UP) {
         const result = await api.signUpWithEmail(normalizedEmail, password);
         if (result.needsEmailVerification) {
+          setVerificationNotice("Check your email to verify your account.");
           showMessage("Verification email sent. Please verify your email before signing in.");
           setAuthMode(AUTH_MODE.SIGN_IN);
           setPassword("");
@@ -220,9 +223,11 @@ export default function App({ apiClient }) {
           return;
         }
 
+        setVerificationNotice("");
         showMessage("Account created successfully.");
       } else {
         await api.signInWithEmail(normalizedEmail, password);
+        setVerificationNotice("");
         showMessage("Signed in successfully.");
       }
     } catch (error) {
@@ -316,14 +321,16 @@ export default function App({ apiClient }) {
       <div className="background-glow" aria-hidden="true" />
 
       <header className="app-header">
-        <p className="kicker">RepBoard</p>
-        <h1>Modern, dark, and built to compete.</h1>
-        <p className="subhead">Track reps. Climb the leaderboard. Check athlete calendars.</p>
+        <p className="kicker">REPBOARD</p>
+        <h1>REPBOARD</h1>
+        <p className="subhead">Track reps. Stay consistent.</p>
       </header>
 
       <div className="status-row">
         <p className="message" role="status" aria-live="polite">{message}</p>
-        {import.meta.env.DEV && !api.hasSupabaseEnv && <span className="chip">Demo mode</span>}
+        {!api.hasSupabaseEnv && (
+          <span className="chip">{import.meta.env.DEV ? "Demo mode" : "Supabase env missing"}</span>
+        )}
       </div>
 
       <main className="page-wrap">
@@ -341,7 +348,6 @@ export default function App({ apiClient }) {
                 -5
               </button>
               <button className="main-button" type="button" onClick={() => handleRepDelta(1)} aria-label="Add one rep">
-                <span>+1</span>
                 <strong data-testid="current-rep-count">{currentRepCount}</strong>
               </button>
               <button className="side-button" type="button" onClick={() => handleRepDelta(5)} aria-label="Add five reps">
@@ -394,7 +400,7 @@ export default function App({ apiClient }) {
           </section>
         )}
 
-        {page === PAGE.PROFILE && (
+        {page === PAGE.PROFILE && user && (
           <section className="card profile-card" aria-label="Profile page">
             <div className="profile-top">
               <div className="avatar" aria-hidden="true">
@@ -430,93 +436,95 @@ export default function App({ apiClient }) {
               <PushupHeatmap dailyPushups={profile?.dailyPushups || {}} label="Your push-up calendar" />
             </div>
 
-            {!user && (
-              <section className="auth-panel" aria-label="Authentication options">
-                <h3>Sign in to sync stats</h3>
+            <div className="card-actions">
+              <button className="ghost" type="button" onClick={handleSignOut}>Log out</button>
+            </div>
+          </section>
+        )}
 
-                <div className="auth-mode-toggle" role="group" aria-label="Authentication mode">
-                  <button
-                    type="button"
-                    className={authMode === AUTH_MODE.SIGN_IN ? "active" : ""}
-                    onClick={() => setAuthMode(AUTH_MODE.SIGN_IN)}
-                    disabled={authLoading}
-                  >
-                    Email sign in
-                  </button>
-                  <button
-                    type="button"
-                    className={authMode === AUTH_MODE.SIGN_UP ? "active" : ""}
-                    onClick={() => setAuthMode(AUTH_MODE.SIGN_UP)}
-                    disabled={authLoading}
-                  >
-                    Email sign up
-                  </button>
-                </div>
+        {page === PAGE.PROFILE && !user && (
+          <section className="card auth-screen" aria-label="Authentication page">
+            <div className="card-head">
+              <h2>Account</h2>
+              <p>Sign in to sync stats and appear on the leaderboard.</p>
+            </div>
 
-                <form className="auth-form" onSubmit={handleEmailAuth}>
-                  <label htmlFor="authEmail">Email</label>
+            {verificationNotice && <div className="verify-tag">{verificationNotice}</div>}
+
+            <div className="auth-mode-toggle" role="group" aria-label="Authentication mode">
+              <button
+                type="button"
+                className={authMode === AUTH_MODE.SIGN_IN ? "active" : ""}
+                onClick={() => setAuthMode(AUTH_MODE.SIGN_IN)}
+                disabled={authLoading}
+              >
+                Email sign in
+              </button>
+              <button
+                type="button"
+                className={authMode === AUTH_MODE.SIGN_UP ? "active" : ""}
+                onClick={() => setAuthMode(AUTH_MODE.SIGN_UP)}
+                disabled={authLoading}
+              >
+                Email sign up
+              </button>
+            </div>
+
+            <form className="auth-form" onSubmit={handleEmailAuth}>
+              <label htmlFor="authEmail">Email</label>
+              <input
+                id="authEmail"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+              />
+
+              <label htmlFor="authPassword">Password</label>
+              <input
+                id="authPassword"
+                type="password"
+                autoComplete={authMode === AUTH_MODE.SIGN_UP ? "new-password" : "current-password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 6 characters"
+              />
+
+              {authMode === AUTH_MODE.SIGN_UP && (
+                <>
+                  <label htmlFor="authConfirmPassword">Confirm password</label>
                   <input
-                    id="authEmail"
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="you@example.com"
-                  />
-
-                  <label htmlFor="authPassword">Password</label>
-                  <input
-                    id="authPassword"
+                    id="authConfirmPassword"
                     type="password"
-                    autoComplete={authMode === AUTH_MODE.SIGN_UP ? "new-password" : "current-password"}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="At least 6 characters"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    placeholder="Re-enter password"
                   />
+                </>
+              )}
 
-                  {authMode === AUTH_MODE.SIGN_UP && (
-                    <>
-                      <label htmlFor="authConfirmPassword">Confirm password</label>
-                      <input
-                        id="authConfirmPassword"
-                        type="password"
-                        autoComplete="new-password"
-                        value={confirmPassword}
-                        onChange={(event) => setConfirmPassword(event.target.value)}
-                        placeholder="Re-enter password"
-                      />
-                    </>
-                  )}
-
-                  <div className="card-actions">
-                    <button className="primary" type="submit" disabled={authLoading}>
-                      {authLoading
-                        ? "Please wait..."
-                        : authMode === AUTH_MODE.SIGN_UP
-                          ? "Create account"
-                          : "Sign in"}
-                    </button>
-                    {authMode === AUTH_MODE.SIGN_IN && (
-                      <button className="ghost" type="button" onClick={handlePasswordReset} disabled={authLoading}>
-                        Forgot password
-                      </button>
-                    )}
-                  </div>
-                </form>
-
-                <div className="oauth-divider" aria-hidden="true">or</div>
-                <button className="ghost" type="button" onClick={handleGoogleSignIn} disabled={authLoading}>
-                  Continue with Google
-                </button>
-                <p className="auth-note">Email sign-up requires verification before first login.</p>
-              </section>
-            )}
-
-            {user && (
               <div className="card-actions">
-                <button className="ghost" type="button" onClick={handleSignOut}>Log out</button>
+                <button className="primary" type="submit" disabled={authLoading}>
+                  {authLoading
+                    ? "Please wait..."
+                    : authMode === AUTH_MODE.SIGN_UP
+                      ? "Create account"
+                      : "Sign in"}
+                </button>
+                {authMode === AUTH_MODE.SIGN_IN && (
+                  <button className="ghost" type="button" onClick={handlePasswordReset} disabled={authLoading}>
+                    Forgot password
+                  </button>
+                )}
               </div>
-            )}
+            </form>
+
+            <div className="oauth-divider" aria-hidden="true">or</div>
+            <button className="ghost" type="button" onClick={handleGoogleSignIn} disabled={authLoading}>
+              Continue with Google
+            </button>
           </section>
         )}
       </main>
@@ -529,7 +537,7 @@ export default function App({ apiClient }) {
           Rep
         </button>
         <button type="button" className={page === PAGE.PROFILE ? "active" : ""} onClick={() => setPage(PAGE.PROFILE)}>
-          Profile
+          {user ? "Profile" : "Account"}
         </button>
       </nav>
 
