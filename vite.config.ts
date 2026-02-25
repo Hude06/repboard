@@ -7,4 +7,7 @@ export default defineConfig({
     minify: false,
     emptyOutDir: true,
   },
+  server: {
+    hmr: false, // Disable HMR for now since it's causing overlay issues
+  },
 });

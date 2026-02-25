@@ -1,6 +1,26 @@
 {
   "PFskXK7tzUYpEeOILJ9T1Kw6V7Y2": {
-    "pushup": 0,
-    "pullup": 0
+    "name": "Jude hill",
+    "pushup": 75,
+    "pullup": 12,
+    "createdAt": "2026-01-17T08:39:09.881Z",
+    "lastUpdated": "2026-01-17T18:16:57.384Z",
+    "challenge": {
+      "date": "2026-01-17",
+      "progress": 10,
+      "completed": true
+    }
+  },
+  "test-challenge-1768674595": {
+    "name": "Test User",
+    "pushup": 50,
+    "pullup": 0,
+    "createdAt": "2026-01-17T18:29:55.592Z",
+    "lastUpdated": "2026-01-17T18:29:55.622Z",
+    "challenge": {
+      "date": "2026-01-17",
+      "progress": 55,
+      "completed": true
+    }
   }
 }
